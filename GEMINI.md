@@ -1,34 +1,65 @@
-# Vision Extension (Webcam → Frames → Reasoning)
+# Listen Extension — Event / Audio Queue for Gemini-CLI
 
-This extension adds a Vision MCP server and a set of `/vision` commands for Gemini-CLI.
-Use it to list cameras, open a device, capture frames/bursts, and run ASL mode.
+This extension adds a Listen MCP server and `/listen…` commands for **hands-free input**. It lets Gemini subscribe to events (like webhooks) or audio files, enqueue them, and respond without you typing.
 
 ## Commands
-- **/vision** — quick help and examples.
-- **/vision:devices** — list available cameras and basic properties.
-- **/vision:start** — open a camera.
-  - keys: `camera_index`, `width`, `height`, `fps`, `backend` (auto|avfoundation|v4l2|dshow|msmf)
-- **/vision:status** — show camera state + properties.
-- **/vision:capture** — single frame; options: `save_dir`, `format` (jpg|png).
-- **/vision:burst** — capture N frames spaced by `period_ms`.
-- **/vision:stop** — release the camera.
-- **/vision:asl** — timed burst → every other frame → ASL interpretation instruction line.
 
-## Typical Flow
-1. `/vision:devices`
-2. `/vision:start camera_index=0 width=640 height=480 fps=15 backend=auto`
-3. `/vision:capture` or `/vision:asl`
-4. `/vision:stop`
+- **/listen** — quick help (this doc in short form)
+- **/listen:start [key=value …]** — start the listener
+- **/listen:status** — show if it’s running
+- **/listen:stop** — stop the listener
+- **/listen:logs [lines=N]** — view recent log lines
+- **/listen:clear_logs** — clear logs
+- **/listen:health** — status + queue depth
+- **/listen:next [timeout_ms=N]** — pull the next queued item (blocking with timeout)
+- **/enqueue_audio path.wav** — enqueue an audio file manually
 
-## ASL Mode (High-level)
-- Captures a short burst (`duration_ms`, `period_ms`, or `n`) via `vision_burst`.
-- Keeps every other frame (tokens like `\@f0` `\@f2` `\@f4`) and appends an instruction:
-  “You are an ASL interpreter. Analyze ONLY the attached photo sequence (left→right is chronological). Transcribe the user's signing into clear, grammatical English. If unsure about a word, fingerspell it in ALL CAPS in brackets. Output ONLY the transcript text.”
+### Common /listen:start keys
 
-## Notes
-- macOS: grant **Camera** permission to your terminal (System Settings → Privacy & Security → Camera).
-- Linux: ensure user has access to `/dev/video*` (e.g., add to `video` group).
-- Windows: try `msmf`/`dshow` backends if `auto` fails.
+- `http_enable` (bool, default `true`) — expose HTTP webhook endpoint
+- `http_port` (int, default `8765`) — port for inbound HTTP events/audio
+- `queue_dir` (path, default `~/.listen_queue`) — directory for queued items
+- `language` (str, default `en`) — language for Whisper transcription
+- `model` (str, default `base`) — Whisper model (tiny|base|small|medium|large)
+- `delete_after` (bool, default `false`) — whether to delete audio after processing
+- `poll_ms` (int, default `500`) — polling interval in ms
+- `timeout_ms` (int, default `900000`) — max time per transcription
 
-## Safety
-- No shell execution. Always stop the camera with `/vision:stop`.
+## Quick Start
+
+1. `/listen:start http_enable=true http_port=8765`
+2. Send an event or audio file to the listener (HTTP POST or `/enqueue_audio file.wav`)
+3. Gemini will pick it up via `/listen:next` and respond
+4. `/listen:stop` to exit
+
+## Event Loop Behavior
+
+- When running, the listener keeps polling for queued items.
+- Each item → Gemini treats as if you typed it.  
+- If item has `.text`, that is passed directly.  
+- If item has `.file` (audio), it is transcribed first, then passed.  
+- Gemini replies concisely to each item.  
+- If TTS is available, it may also synthesize a spoken reply.
+
+## Defaults
+
+- Listener starts in **HTTP mode**, serving `/event` on the given port.  
+- Audio transcriptions use Whisper with `fp16=false` for CPU portability.  
+- If nothing arrives for ~5 minutes, the loop ends politely.  
+- If the inbound text is exactly `stop | quit | goodbye`, the loop ends politely.
+
+## Platform Notes
+
+- **macOS**: check firewall if using HTTP listener.  
+- **Linux**: make sure the chosen `http_port` is not reserved.  
+- **Windows**: ensure Python has permissions to bind the port.
+
+## Troubleshooting
+
+- **“Connection closed”** → check venv deps: install `mcp`, `fastmcp`, `whisper`, `flask` (or aiohttp) into the extension venv.  
+- **No events picked up** → confirm POSTs to `http://localhost:8765/event` (if `http_enable=true`).  
+- **No transcription** → make sure Whisper CLI or `openai-whisper` Python package is installed in the venv.
+
+## Examples
+
+- Start listener with default options:
