@@ -1,0 +1,12 @@
+description = "Clear the listener logs."
+prompt = """
+!{
+  if [ -f /tmp/gemini-listen.log ]; then
+    : > /tmp/gemini-listen.log
+    echo "Logs cleared"
+  else
+    echo "No logs found"
+  fi
+}
+Reply with the one-line status only.
+"""

@@ -1,0 +1,15 @@
+description = "List available /listen commands."
+prompt = """
+!{
+  cat <<'EOF'
+/listen:start   – Start the listener (background, port 8765)
+/listen:status  – Show if it’s running
+/listen:stop    – Stop the listener
+/listen:logs    – Show the last 50 lines of logs
+/listen:clear   – Clear/reset the logs
+/listen:health  – Call the /health endpoint to verify it's alive
+/listen:help    – Show this help text
+EOF
+}
+Return exactly the text above.
+"""

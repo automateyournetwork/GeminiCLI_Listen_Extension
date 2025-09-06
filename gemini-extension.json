@@ -1,0 +1,12 @@
+{
+  "name": "listen",
+  "version": "1.0.0",
+  "mcpServers": {
+    "listen": {
+      "command": "bash",
+      "args": ["${extensionPath}${/}servers${/}run.sh"]
+    }
+  },
+  "contextFileName": "GEMINI.md",
+  "excludeTools": []
+}

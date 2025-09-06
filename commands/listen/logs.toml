@@ -1,0 +1,12 @@
+description = "Show the last 50 lines of the listener logs."
+
+prompt = """
+!{
+  if [ -f /tmp/gemini-listen.log ]; then
+    tail -n 50 /tmp/gemini-listen.log
+  else
+    echo "No logs found (listener not started yet)."
+  fi
+}
+Return exactly the output above.
+"""

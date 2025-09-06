@@ -1,0 +1,19 @@
+description = "Stop the background webhook listener."
+
+prompt = """
+!{
+  if [ -f /tmp/gemini-listen.pid ]; then
+    read PID < /tmp/gemini-listen.pid
+    if [ -n "$PID" ] && ps -p "$PID" >/dev/null 2>&1; then
+      kill "$PID" >/dev/null 2>&1 || true
+      echo "Stopped listener"
+    else
+      echo "No listener running (stale PID file)"
+    fi
+    rm -f /tmp/gemini-listen.pid
+  else
+    echo "No listener running"
+  fi
+}
+Reply with the one-line status only.
+"""

@@ -1,0 +1,11 @@
+description = "Check listener /health endpoint."
+prompt = """
+!{
+  if curl -s http://127.0.0.1:8765/health | grep -q "ok"; then
+    echo "Healthy"
+  else
+    echo "Unhealthy"
+  fi
+}
+Reply with the one-line health status only.
+"""

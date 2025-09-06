@@ -1,0 +1,17 @@
+description = "Show listener status."
+
+prompt = """
+!{
+  if [ -f /tmp/gemini-listen.pid ]; then
+    read PID < /tmp/gemini-listen.pid
+    if [ -n "$PID" ] && ps -p "$PID" >/dev/null 2>&1; then
+      echo "Running (PID: $PID)"
+      exit 0
+    fi
+    # PID file exists but process isn't alive
+    rm -f /tmp/gemini-listen.pid
+  fi
+  echo "Not running"
+}
+Return exactly the one-line status above.
+"""
