@@ -15,7 +15,7 @@ fi
 
 # 2) Ensure deps (idempotent). All output -> STDERR.
 if [ -f "$SERVERS_DIR/requirements.txt" ]; then
-  "$VENV/bin/pip" install -r "$SERVERS_DIR/requirements.txt" \
+  "$VENV/bin/python3" -m pip install -r "$SERVERS_DIR/requirements.txt" \
     --disable-pip-version-check --no-input -q 1>&2
 fi
 
