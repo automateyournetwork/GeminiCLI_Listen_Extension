@@ -5,7 +5,7 @@ An Extension for Gemini-CLI that enables listen mode turning Gemini-CLI into a s
 
 ```bash
 
-gemini extensions install —source https://github.com/automateyournetwork/GeminiCLI_Listen_Extension.git
+gemini extensions install https://github.com/automateyournetwork/GeminiCLI_Listen_Extension.git
 
 ```
 
